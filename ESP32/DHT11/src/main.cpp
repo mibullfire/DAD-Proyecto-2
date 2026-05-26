@@ -13,15 +13,16 @@
  *   DATA → GPIO4  +  resistencia 10kΩ entre DATA y 3.3V
  */
 
+#include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <DHT.h>
 
 // ── Configuración — MODIFICA ESTOS VALORES ────────────────────────────────────
-const char* WIFI_SSID     = "NombreDeTuRed";
-const char* WIFI_PASSWORD = "ContraseñaWifi";
+const char* WIFI_SSID     = "iPhone de Mibu";
+const char* WIFI_PASSWORD = "xdxdxdxd";
 
-const char* MQTT_BROKER   = "192.168.1.100"; // IP del PC donde corre Mosquitto
+const char* MQTT_BROKER   = "172.20.10.3"; // IP del PC en la red del hotspot
 const int   MQTT_PORT     = 1883;
 
 const char* HOME_ID       = "casa1";

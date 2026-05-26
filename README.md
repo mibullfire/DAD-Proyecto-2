@@ -48,8 +48,6 @@ Proyecto backend/
 
 ### Trabajo 1 — Dependencias Maven (`pom.xml`)
 
-**Estado: COMPLETADO**
-
 Se añadieron dos dependencias al `pom.xml`. Como el proyecto usa `vertx-stack-depchain` como BOM, no hace falta especificar versión (se hereda de `vertx.version = 5.0.7`).
 
 ```xml
@@ -66,8 +64,6 @@ Se añadieron dos dependencias al `pom.xml`. Como el proyecto usa `vertx-stack-d
 ---
 
 ### Trabajo 2 — Base de datos MariaDB + integración MySQL en el código
-
-**Estado: COMPLETADO**
 
 #### 2A — Crear las tablas en HeidiSQL
 
@@ -146,8 +142,6 @@ Todos los endpoints GET y POST ahora usan `client.query(...)` y `client.prepared
 
 ### Trabajo 3 — Cliente MQTT (LAB 9)
 
-**Estado: COMPLETADO**
-
 #### 3A — Arrancar el broker Mosquitto
 
 Crear el archivo `mosquitto.conf` en cualquier carpeta con este contenido:
@@ -192,13 +186,7 @@ Debe aparecer en la consola: `Opening ipv4 listen socket on port 1883`
 
 ---
 
-## Trabajos pendientes
-
----
-
 ### Trabajo 4 — Lógica del Módulo 1.7 (el núcleo)
-
-**Estado: COMPLETADO**
 
 Implementado dentro de `setupMqttHandlers()` en `SensorApiVerticle.java`:
 
@@ -216,8 +204,6 @@ Implementado dentro de `setupMqttHandlers()` en `SensorApiVerticle.java`:
 
 ### Trabajo 5 — Endpoints REST del Módulo 1.7
 
-**Estado: COMPLETADO**
-
 **`GET /api/v1/homes/:homeId/office/:sensorId/heat_index`**
 Consulta la última fila de `heat_index_records` para ese `homeId` + `sensorId` ordenando por `timestamp DESC LIMIT 1`.
 - `200 OK` con JSON: `homeId`, `sensorId`, `temperature`, `humidity`, `heat_index`, `timestamp`
@@ -231,13 +217,52 @@ Borra todas las filas de `office_alarms` para ese `homeId`.
 
 ### Trabajo 6 — Pruebas con MQTT Explorer y Postman
 
-**Estado: COMPLETADO**
+#### Arranque de los servicios
 
-Todos los pasos detallados están documentados en **`PRUEBAS.md`**. Incluye:
-- Arranque de los tres servicios (Mosquitto, MariaDB, Vert.x)
-- Prueba con Heat Index alto (HI > 32 → extractor ON)
-- Prueba con Heat Index bajo (HI ≤ 32 → extractor OFF)
-- Prueba multi-tenancy (casa1 y casa2 independientes)
-- Prueba de los dos endpoints REST con Postman (GET y DELETE)
-- Prueba de reconexión automática MQTT
-- Checklist final y tabla de valores de referencia
+1. **Mosquitto** (Docker):
+   ```bash
+   docker run -it -p 1883:1883 -v C:/ruta/mosquitto.conf:/mosquitto/config/mosquitto.conf eclipse-mosquitto
+   ```
+2. **MariaDB**: arrancar el servicio local.
+3. **Vert.x**: ejecutar desde el IDE o con `mvn exec:java`.
+
+#### Prueba con Heat Index alto (HI > 32 → extractor ON)
+
+Publicar en MQTT Explorer al topic `home/casa1/office/sensor1/ambient`:
+```json
+{"temperature": 35.0, "humidity": 80.0}
+```
+El servidor calcula HI > 32, guarda alarma y publica `{"state": "ON"}` a `home/casa1/office/extractor/command`.
+
+#### Prueba con Heat Index bajo (HI ≤ 32 → extractor OFF)
+
+Publicar en MQTT Explorer al topic `home/casa1/office/sensor1/ambient`:
+```json
+{"temperature": 22.0, "humidity": 40.0}
+```
+El servidor calcula HI ≤ 32 y publica `{"state": "OFF"}` a `home/casa1/office/extractor/command`.
+
+#### Prueba multi-tenancy
+
+Publicar el mismo mensaje cambiando el `homeId`:
+- `home/casa1/office/sensor1/ambient` → controla `home/casa1/office/extractor/command`
+- `home/casa2/office/sensor1/ambient` → controla `home/casa2/office/extractor/command`
+
+Cada vivienda opera de forma completamente independiente.
+
+#### Prueba endpoints REST con Postman
+
+- `GET /api/v1/homes/casa1/office/sensor1/heat_index` → devuelve la última lectura con su HI calculado.
+- `DELETE /api/v1/homes/casa1/office/alarms` → borra todas las alarmas de `casa1`, responde `204 No Content`.
+
+---
+
+### Trabajo 7 — Firmware ESP32 (PlatformIO)
+
+Se crearon dos proyectos PlatformIO en `ESP32/`:
+
+**`ESP32/DHT11/`** — Nodo sensor. Lee temperatura y humedad del sensor DHT11 (GPIO4) cada 10 segundos y publica el JSON `{"temperature": X, "humidity": Y}` al topic `home/{homeId}/office/{sensorId}/ambient` vía MQTT.
+
+**`ESP32/RELE/`** — Nodo actuador. Se suscribe al topic `home/{homeId}/office/extractor/command` y activa o desactiva el relé (GPIO5) según el campo `state` del JSON recibido (`"ON"` / `"OFF"`).
+
+Ambos proyectos usan el framework Arduino sobre la placa `featheresp32` y se conectan al broker Mosquitto a través del hotspot del móvil.

@@ -28,8 +28,8 @@ public class SensorApiVerticle extends AbstractVerticle {
                 .setPort(3306)
                 .setHost("127.0.0.1")
                 .setDatabase("iot_project")
-                .setUser("root")         // <-- cambia si tu usuario es distinto
-                .setPassword("contraseña"); // <-- pon tu contraseña aquí
+                .setUser("root")         // <-- usuario base de datos
+                .setPassword("contraseña"); // <-- la contraseña de mi base de datos
 
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
