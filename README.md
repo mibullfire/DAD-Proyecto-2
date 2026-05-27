@@ -2,7 +2,11 @@
 
 ## Descripción del módulo
 
-Sistema de control climático para un despacho domótico. El servidor Vert.x recibe telemetría de temperatura y humedad desde un sensor DHT11 (ESP32) vía MQTT, calcula el **Índice de Calor** con la ecuación de Rothfusz, y si el valor supera 32°C activa automáticamente el extractor vía MQTT. Soporta múltiples viviendas simultáneas (multi-tenancy) usando `homeId` como clave de aislamiento.
+Este proyecto ha sido realizado por Miguel Toro Llamas y María Millán Arcos.
+
+Se trata de un sistema de control climático para un despacho domótico. El servidor Vert.x recibe telemetría de temperatura y humedad desde un sensor DHT11 (ESP32) vía MQTT, calcula el **Índice de Calor** con la ecuación de Rothfusz, y si el valor supera 32°C activa automáticamente el extractor vía MQTT. 
+
+Además, soporta múltiples viviendas simultáneas (multi-tenancy) usando `homeId` como clave de aislamiento.
 
 ### Topics MQTT
 - **Sensor (entrante):** `home/{homeId}/office/{sensorId}/ambient`
@@ -122,8 +126,8 @@ MySQLConnectOptions connectOptions = new MySQLConnectOptions()
         .setPort(3306)
         .setHost("127.0.0.1")
         .setDatabase("iot_project")
-        .setUser("root")        // cambiar si es necesario
-        .setPassword("...");    // poner la contraseña de MariaDB
+        .setUser("root")        // usuario 
+        .setPassword("...");    // contraseña en MariaDB
 
 PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
